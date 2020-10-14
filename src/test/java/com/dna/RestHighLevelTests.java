@@ -1,6 +1,7 @@
 package com.dna;
 
 import com.dna.entity.Product;
+import com.dna.service.ProductService;
 import com.google.gson.Gson;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
@@ -10,6 +11,7 @@ import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
@@ -29,8 +31,16 @@ import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
+
+/**
+ * @description:ES RestHighLevel API
+ * @author: SUJUN
+ * @time: 2020/10/14 17:33
+ */
 
 @SpringBootTest
 class RestHighLevelTests {
@@ -39,10 +49,8 @@ class RestHighLevelTests {
             RestClient.builder(
                     new HttpHost("192.168.2.202", 9200, "http")));
 
-    @Test
-    void contextLoads() {
-    }
-
+    @Resource
+    private ProductService service;
 
     @Test
     public void createIndex() throws IOException {
@@ -90,15 +98,15 @@ class RestHighLevelTests {
     @Test
     public void insertData() throws IOException {
 
-//        List<Product> list = service.list();
-//
-//        IndexRequest request = new IndexRequest("test_sj");
-//        Product product = list.get(0);
-//        Gson gson = new Gson();
-//        request.id(product.getId().toString());
-//        request.source(gson.toJson(product), XContentType.JSON);
-//        IndexResponse response = ESClient.index(request, RequestOptions.DEFAULT);
-//        System.out.println(response);
+        List<Product> list = service.list();
+
+        IndexRequest request = new IndexRequest("test_sj");
+        Product product = list.get(0);
+        Gson gson = new Gson();
+        request.id(product.getId().toString());
+        request.source(gson.toJson(product), XContentType.JSON);
+        IndexResponse response = ESClient.index(request, RequestOptions.DEFAULT);
+        System.out.println(response);
 
     }
 
@@ -107,11 +115,16 @@ class RestHighLevelTests {
     public void batchInsertData() throws IOException {
         BulkRequest request = new BulkRequest("test_sj");
         Gson gson = new Gson();
-        Product product = new Product();
-        product.setPrice(3999.00);
-        product.setDesc("xiaomi");
-        for (int i = 0; i < 10; i++) {
-            product.setName("ddname" + i);
+//        Product product = new Product();
+//        product.setPrice(3999.00);
+//        product.setDesc("xiaomi");
+//        for (int i = 0; i < 10; i++) {
+//            product.setName("ddname" + i);
+//            request.add(new IndexRequest().source(gson.toJson(product), XContentType.JSON));
+//        }
+
+        List<Product> list = service.list();
+        for (Product product : list) {
             request.add(new IndexRequest().source(gson.toJson(product), XContentType.JSON));
         }
 
