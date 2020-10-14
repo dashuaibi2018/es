@@ -1,0 +1,178 @@
+package com.dna;
+
+import com.dna.entity.Product;
+import com.google.gson.Gson;
+import org.apache.http.HttpHost;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.delete.DeleteResponse;
+import org.elasticsearch.action.get.*;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.client.indices.GetIndexResponse;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.reindex.BulkByScrollResponse;
+import org.elasticsearch.index.reindex.UpdateByQueryRequest;
+import org.elasticsearch.script.Script;
+import org.elasticsearch.script.ScriptType;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import java.io.IOException;
+import java.util.Collections;
+
+@SpringBootTest
+class RestHighLevelTests {
+
+    public static final RestHighLevelClient ESClient = new RestHighLevelClient(
+            RestClient.builder(
+                    new HttpHost("192.168.2.202", 9200, "http")));
+
+    @Test
+    void contextLoads() {
+    }
+
+
+    @Test
+    public void createIndex() throws IOException {
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(
+                        new HttpHost("192.168.2.202", 9200, "http")));
+
+        CreateIndexRequest request = new CreateIndexRequest("test_sj");
+        request.settings(Settings.builder().put("index.number_of_shards", 3)
+                .put("index.number_of_replicas", 2));
+
+        CreateIndexResponse createIndexResponse = client.indices().create(request, RequestOptions.DEFAULT);
+        if (createIndexResponse.isAcknowledged()) {
+            System.out.println("创建索引成功");
+        } else {
+            System.out.println("创建索引失败");
+        }
+    }
+
+    @Test
+    public void getIndex() throws IOException {
+        GetIndexRequest request = new GetIndexRequest("*");
+        GetIndexResponse response = ESClient.indices().get(request, RequestOptions.DEFAULT);
+
+        String[] indices = response.getIndices();
+        for (String index : indices) {
+            System.out.println("indexName: " + index);
+        }
+    }
+
+
+    @Test
+    public void deleteIndex() throws IOException {
+        DeleteIndexRequest request = new DeleteIndexRequest("test_sj");
+        //AcknowledgedResponse
+        AcknowledgedResponse response = ESClient.indices().delete(request, RequestOptions.DEFAULT);
+
+        if (response.isAcknowledged()) {
+            System.out.println("删除索引成功");
+        } else {
+            System.out.println("删除索引失败");
+        }
+    }
+
+    @Test
+    public void insertData() throws IOException {
+
+//        List<Product> list = service.list();
+//
+//        IndexRequest request = new IndexRequest("test_sj");
+//        Product product = list.get(0);
+//        Gson gson = new Gson();
+//        request.id(product.getId().toString());
+//        request.source(gson.toJson(product), XContentType.JSON);
+//        IndexResponse response = ESClient.index(request, RequestOptions.DEFAULT);
+//        System.out.println(response);
+
+    }
+
+
+    @Test
+    public void batchInsertData() throws IOException {
+        BulkRequest request = new BulkRequest("test_sj");
+        Gson gson = new Gson();
+        Product product = new Product();
+        product.setPrice(3999.00);
+        product.setDesc("xiaomi");
+        for (int i = 0; i < 10; i++) {
+            product.setName("ddname" + i);
+            request.add(new IndexRequest().source(gson.toJson(product), XContentType.JSON));
+        }
+
+        BulkResponse response = ESClient.bulk(request, RequestOptions.DEFAULT);
+        System.out.println("数量为：" + response.getItems().length);
+    }
+
+
+    @Test
+    public void getById() throws IOException {
+        GetRequest request = new GetRequest("test_sj", "40oCJXUBvlFwiZ4Og9N8");
+
+        String[] includes = {"name", "price"};
+        String[] excludes = {"desc"};
+        FetchSourceContext fetchSourceContext = new FetchSourceContext(true, includes, excludes);
+        request.fetchSourceContext(fetchSourceContext);
+        GetResponse response = ESClient.get(request, RequestOptions.DEFAULT);
+        System.out.println(response.getSourceAsMap());
+
+    }
+
+
+    @Test
+    public void delById() throws IOException {
+        DeleteRequest request = new DeleteRequest("test_sj", "40oCJXUBvlFwiZ4Og9N8");
+        DeleteResponse response = ESClient.delete(request, RequestOptions.DEFAULT);
+        System.out.println(response.getResult());
+
+    }
+
+    @Test
+    public void multiGetById() throws IOException {
+
+        MultiGetRequest request = new MultiGetRequest();
+        request.add("test_sj", "7EoCJXUBvlFwiZ4Og9N8");
+        request.add(new MultiGetRequest.Item("test_sj", "50oCJXUBvlFwiZ4Og9N8"));
+
+        MultiGetResponse response = ESClient.mget(request, RequestOptions.DEFAULT);
+        for (MultiGetItemResponse itemResponse : response) {
+            System.out.println(itemResponse.getResponse().getSourceAsString());
+        }
+    }
+
+    @Test
+    public void updateByQuery() throws IOException {
+        UpdateByQueryRequest request = new UpdateByQueryRequest("test_sj");
+
+        //默认情况下版本冲突会 终止UpdateByQueryRequest进程
+        //可设置版本冲突继续
+        request.setConflicts("proceed");
+        /*限制更新条数*/
+        request.setBatchSize(10);
+        request.setQuery(QueryBuilders.matchQuery("name", "name2 name5"));
+
+        request.setScript(
+                new Script(ScriptType.INLINE, "painless", "ctx._source.desc+='#';", Collections.emptyMap()));
+        BulkByScrollResponse response = ESClient.updateByQuery(request, RequestOptions.DEFAULT);
+
+        System.out.println(response.getSearchFailures());
+
+    }
+
+}
+
