@@ -52,6 +52,13 @@ class RestHighLevelTests {
     @Resource
     private ProductService service;
 
+    /**
+     * @description: 创建索引
+     * @param
+     * @return: void
+     * @author: SUJUN
+     * @time: 2020/10/15 17:49
+     */
     @Test
     public void createIndex() throws IOException {
         RestHighLevelClient client = new RestHighLevelClient(
