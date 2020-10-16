@@ -20,6 +20,9 @@ import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.CreateIndexResponse;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.indices.GetIndexResponse;
+import org.elasticsearch.client.sniff.ElasticsearchNodesSniffer;
+import org.elasticsearch.client.sniff.SniffOnFailureListener;
+import org.elasticsearch.client.sniff.Sniffer;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -45,16 +48,19 @@ import java.util.List;
 @SpringBootTest
 class RestHighLevelTests {
 
-    public static final RestHighLevelClient ESClient = new RestHighLevelClient(
-            RestClient.builder(
-                    new HttpHost("192.168.2.202", 9200, "http")));
+//    public static final RestHighLevelClient ESClient = new RestHighLevelClient(
+//            RestClient.builder(
+//                    new HttpHost("192.168.2.202", 9200, "http")));
+
+    static final RestHighLevelClient highLevelClient = ESClient.getInstance().getHighLevelClient();
+
 
     @Resource
     private ProductService service;
 
     /**
-     * @description: 创建索引
      * @param
+     * @description: 创建索引
      * @return: void
      * @author: SUJUN
      * @time: 2020/10/15 17:49
@@ -80,7 +86,7 @@ class RestHighLevelTests {
     @Test
     public void getIndex() throws IOException {
         GetIndexRequest request = new GetIndexRequest("*");
-        GetIndexResponse response = ESClient.indices().get(request, RequestOptions.DEFAULT);
+        GetIndexResponse response = highLevelClient.indices().get(request, RequestOptions.DEFAULT);
 
         String[] indices = response.getIndices();
         for (String index : indices) {
@@ -93,7 +99,7 @@ class RestHighLevelTests {
     public void deleteIndex() throws IOException {
         DeleteIndexRequest request = new DeleteIndexRequest("test_sj");
         //AcknowledgedResponse
-        AcknowledgedResponse response = ESClient.indices().delete(request, RequestOptions.DEFAULT);
+        AcknowledgedResponse response = highLevelClient.indices().delete(request, RequestOptions.DEFAULT);
 
         if (response.isAcknowledged()) {
             System.out.println("删除索引成功");
@@ -112,7 +118,7 @@ class RestHighLevelTests {
         Gson gson = new Gson();
         request.id(product.getId().toString());
         request.source(gson.toJson(product), XContentType.JSON);
-        IndexResponse response = ESClient.index(request, RequestOptions.DEFAULT);
+        IndexResponse response = highLevelClient.index(request, RequestOptions.DEFAULT);
         System.out.println(response);
 
     }
@@ -135,7 +141,7 @@ class RestHighLevelTests {
             request.add(new IndexRequest().source(gson.toJson(product), XContentType.JSON));
         }
 
-        BulkResponse response = ESClient.bulk(request, RequestOptions.DEFAULT);
+        BulkResponse response = highLevelClient.bulk(request, RequestOptions.DEFAULT);
         System.out.println("数量为：" + response.getItems().length);
     }
 
@@ -148,7 +154,7 @@ class RestHighLevelTests {
         String[] excludes = {"desc"};
         FetchSourceContext fetchSourceContext = new FetchSourceContext(true, includes, excludes);
         request.fetchSourceContext(fetchSourceContext);
-        GetResponse response = ESClient.get(request, RequestOptions.DEFAULT);
+        GetResponse response = highLevelClient.get(request, RequestOptions.DEFAULT);
         System.out.println(response.getSourceAsMap());
 
     }
@@ -157,7 +163,7 @@ class RestHighLevelTests {
     @Test
     public void delById() throws IOException {
         DeleteRequest request = new DeleteRequest("test_sj", "40oCJXUBvlFwiZ4Og9N8");
-        DeleteResponse response = ESClient.delete(request, RequestOptions.DEFAULT);
+        DeleteResponse response = highLevelClient.delete(request, RequestOptions.DEFAULT);
         System.out.println(response.getResult());
 
     }
@@ -169,7 +175,7 @@ class RestHighLevelTests {
         request.add("test_sj", "7EoCJXUBvlFwiZ4Og9N8");
         request.add(new MultiGetRequest.Item("test_sj", "50oCJXUBvlFwiZ4Og9N8"));
 
-        MultiGetResponse response = ESClient.mget(request, RequestOptions.DEFAULT);
+        MultiGetResponse response = highLevelClient.mget(request, RequestOptions.DEFAULT);
         for (MultiGetItemResponse itemResponse : response) {
             System.out.println(itemResponse.getResponse().getSourceAsString());
         }
@@ -188,11 +194,51 @@ class RestHighLevelTests {
 
         request.setScript(
                 new Script(ScriptType.INLINE, "painless", "ctx._source.desc+='#';", Collections.emptyMap()));
-        BulkByScrollResponse response = ESClient.updateByQuery(request, RequestOptions.DEFAULT);
+        BulkByScrollResponse response = highLevelClient.updateByQuery(request, RequestOptions.DEFAULT);
 
         System.out.println(response.getSearchFailures());
 
     }
 
-}
 
+    //------------------------------------------------------------------------------------------------------------------------------
+    @Test
+    public void getHighLevelClient() {
+        RestHighLevelClient client = ESClient.getInstance().getHighLevelClient();
+        ESClient.getInstance().closeClient();
+    }
+
+    //嗅探器
+    @Test
+    public void sniffer() throws IOException {
+
+        // 监听器
+        SniffOnFailureListener sniffOnFailureListener = new SniffOnFailureListener();
+
+        //1.获取Clients
+        RestClient restClient = RestClient.builder(
+                new HttpHost("192.168.2.202", 9200, "http")
+        ).setFailureListener(sniffOnFailureListener).build();//设置用于监听嗅探失败的监听器 绑定监听器
+
+        //2.使用HTTPS
+        ElasticsearchNodesSniffer nodesSniffer = new ElasticsearchNodesSniffer(
+                restClient, ElasticsearchNodesSniffer.DEFAULT_SNIFF_REQUEST_TIMEOUT, ElasticsearchNodesSniffer.Scheme.HTTPS
+        );
+
+        //3.为RestClient绑定嗅探器
+        Sniffer sniffer = Sniffer.builder(restClient)
+                .setSniffIntervalMillis(5000)  //每隔多久嗅探一次 默5分钟
+                .setSniffAfterFailureDelayMillis(30000) //若未绑定监听器则无效，嗅探失败时触发一次嗅探，经过设置的时间之后再次嗅探，直至正常
+                .setNodesSniffer(nodesSniffer) //使用HTTPS必须要设置的对象
+                .build();
+
+        //启动监听
+        sniffOnFailureListener.setSniffer(sniffer);
+
+        //注意释放嗅探器资源 关闭client之前先关闭嗅探器
+        sniffer.close();
+        restClient.close();
+    }
+
+
+}
