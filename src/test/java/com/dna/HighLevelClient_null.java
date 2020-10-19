@@ -4,9 +4,9 @@ import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.sniff.Sniffer;
 
-public class HighLevelClient {
+public class HighLevelClient_null {
 
-    private static RestClientBuilder restClientBuilder = ClientBuilders.getClientBuilder();
+    private static RestClientBuilder restClientBuilder = ClientBuilders_null.getClientBuilder();
 
     //客户端实例化
     private static RestHighLevelClient restHighLevelClient;

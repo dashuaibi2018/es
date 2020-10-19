@@ -6,7 +6,7 @@ import org.apache.http.message.BasicHeader;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 
-public class ClientBuilders {
+public class ClientBuilders_null {
     private static final String HOSTS = "192.168.2.202:9200";
 
 

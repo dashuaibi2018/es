@@ -1,8 +1,11 @@
 package com.dna;
 
+import com.dna.entity.City;
 import com.dna.entity.Product;
+import com.dna.service.CityService;
 import com.dna.service.ProductService;
 import com.google.gson.Gson;
+import lombok.SneakyThrows;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -13,6 +16,7 @@ import org.elasticsearch.action.get.*;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.client.Node;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -37,6 +41,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -56,7 +61,11 @@ class RestHighLevelTests {
 
 
     @Resource
-    private ProductService service;
+    private ProductService productService;
+
+    @Resource
+    private CityService cityService;
+
 
     /**
      * @param
@@ -111,7 +120,7 @@ class RestHighLevelTests {
     @Test
     public void insertData() throws IOException {
 
-        List<Product> list = service.list();
+        List<Product> list = productService.list();
 
         IndexRequest request = new IndexRequest("test_sj");
         Product product = list.get(0);
@@ -136,7 +145,7 @@ class RestHighLevelTests {
 //            request.add(new IndexRequest().source(gson.toJson(product), XContentType.JSON));
 //        }
 
-        List<Product> list = service.list();
+        List<Product> list = productService.list();
         for (Product product : list) {
             request.add(new IndexRequest().source(gson.toJson(product), XContentType.JSON));
         }
@@ -239,6 +248,69 @@ class RestHighLevelTests {
         sniffer.close();
         restClient.close();
     }
+
+
+    //测试自动探查节点
+    @Test
+    public void snifferTest() throws InterruptedException {
+//        while(true){
+//            Thread.sleep(5000);
+//            System.out.println(highLevelClient);
+//        }
+
+        RestHighLevelClient client = ESClient.getInstance().getHighLevelClient();
+        Iterator<Node> nodes = client.getLowLevelClient().getNodes().iterator();
+        while (nodes.hasNext()) {
+            Node node = nodes.next();
+            System.out.println(node);
+        }
+        Thread.sleep(5000);
+        System.out.println("1000年后：");
+        nodes = client.getLowLevelClient().getNodes().iterator();
+        while (nodes.hasNext()) {
+            Node node = nodes.next();
+            System.out.println(node);
+        }
+        ESClient.getInstance().closeClient();
+    }
+
+    /**
+     * @param
+     * @description: 批量插入
+     * @return: void
+     * @author: SUJUN
+     * @time: 2020/10/19 10:01
+     */
+    @SneakyThrows
+    @Test
+    public void bulkInit() {
+
+        RestHighLevelClient client = ESClient.getInstance().getHighLevelClient();
+        GetIndexRequest request = new GetIndexRequest("test_city");
+        boolean exists = client.indices().exists(request, RequestOptions.DEFAULT);
+        if (!exists) {
+            CreateIndexRequest createIndexRequest = new CreateIndexRequest("test_city");
+            createIndexRequest.settings(Settings.builder()
+                    .put("index.number_of_shards", 3)
+                    .put("index.number_of_replicas", 2));
+            CreateIndexResponse createIndexResponse = client.indices().create(createIndexRequest, RequestOptions.DEFAULT);
+        }
+
+        List<City> cityList = cityService.list();
+        BulkRequest bulkRequest = new BulkRequest("test_city");
+        for (int i = 0; i < cityList.size(); i++) {
+            bulkRequest.add(new IndexRequest().id(String.valueOf(i)).source(new Gson().toJson(cityList.get(i)), XContentType.JSON));
+        }
+
+        BulkResponse response = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        System.out.println(response.getItems().length);
+
+        ESClient.getInstance().closeClient();
+    }
+
+
+
+
 
 
 }
