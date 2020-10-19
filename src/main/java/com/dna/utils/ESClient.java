@@ -1,4 +1,4 @@
-package com.dna;
+package com.dna.utils;
 
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
@@ -78,10 +78,10 @@ public class ESClient {
         }
 
         //10s刷新并更新一次节点
-        sniffer = Sniffer.builder(highClient.getLowLevelClient())
-                .setSniffIntervalMillis(5000)
-                .setSniffAfterFailureDelayMillis(15000)
-                .build();
+//        sniffer = Sniffer.builder(highClient.getLowLevelClient())
+////                .setSniffIntervalMillis(5000)
+////                .setSniffAfterFailureDelayMillis(15000)
+////                .build();
 
         return highClient;
     }

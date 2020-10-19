@@ -4,6 +4,7 @@ import com.dna.entity.City;
 import com.dna.entity.Product;
 import com.dna.service.CityService;
 import com.dna.service.ProductService;
+import com.dna.utils.ESClient;
 import com.google.gson.Gson;
 import lombok.SneakyThrows;
 import org.apache.http.HttpHost;
