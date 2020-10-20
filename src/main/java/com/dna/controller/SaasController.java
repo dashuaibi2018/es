@@ -116,4 +116,35 @@ public class SaasController {
     }
 
 
+    /**
+     * @param
+     * @description: service_objs_join_vehicle 车牌号查询
+     * @return: com.dna.entity.ResultDto
+     * @author: SUJUN
+     * @time: 2020/10/20 14:33
+     */
+    @RequestMapping("/carNoSearch")
+    public ResultDto carNoSearch(HashMap<String, Object> reqMap) throws IOException {
+        ResultDto res = new ResultDto();
+        MultiSearchRequest request = new MultiSearchRequest();
+
+        SearchRequest searchRequest = new SearchRequest("service_objs_join_vehicle");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery("status", "1"))
+                .must(QueryBuilders.termQuery("rec_status", "1"))
+                .must(QueryBuilders.prefixQuery("license_plate_no.keyword", "苏A6A5M0"))
+        ).from(0).size(20);
+
+//        searchSourceBuilder.sort("alarm_time", SortOrder.DESC).from(0).size(20);
+        searchRequest.source(searchSourceBuilder);
+
+        request.add(searchRequest);
+        MultiSearchResponse response = client.msearch(request, RequestOptions.DEFAULT);
+        res.setData(response.getResponses());
+
+        return res;
+    }
+
+
 }
