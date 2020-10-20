@@ -310,8 +310,4 @@ class RestHighLevelTests {
     }
 
 
-
-
-
-
 }
