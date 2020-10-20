@@ -8,9 +8,7 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchScrollRequest;
+import org.elasticsearch.action.search.*;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -198,6 +196,64 @@ public class ClientController {
 
         res.setData(response.getHits().getHits());
         return res;
+    }
+
+
+    /**
+     * @param
+     * @description: multiSearch  一个请求同时多个查询
+     * @return: com.dna.utils.ResultDto
+     * @author: SUJUN
+     * @time: 2020/10/19 19:07
+     */
+    @SneakyThrows
+    @RequestMapping("/multiSearch")
+    public ResultDto multiSearch() {
+        ResultDto res = new ResultDto();
+        MultiSearchRequest request = new MultiSearchRequest();
+
+        SearchRequest firstSearchRequest = new SearchRequest("service_objs_join_vehicle");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchQuery("product_name", "昂科威"));
+        firstSearchRequest.source(searchSourceBuilder);
+        request.add(firstSearchRequest);
+
+        SearchRequest secondSearchRequest = new SearchRequest("service_objs_join_vehicle");
+        searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchQuery("product_name", "宝马"));
+        secondSearchRequest.source(searchSourceBuilder);
+        request.add(secondSearchRequest);
+
+        MultiSearchResponse response = client.msearch(request, RequestOptions.DEFAULT);
+        res.setData(response);
+
+        return res;
+    }
+
+
+    @SneakyThrows
+    @RequestMapping("/boolSearch")
+    public ResultDto boolSearch() {
+        ResultDto res = new ResultDto();
+
+        MultiSearchRequest request = new MultiSearchRequest();
+
+        SearchRequest searchRequest = new SearchRequest("service_objs_join_vehicle");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query
+                (
+                        QueryBuilders.boolQuery()
+                                .must(matchPhraseQuery("    "))
+                                .filter(matchQuery("product_name", "12").)
+                        .mustNot(matchQuery("product_name","12"))
+                );
+
+
+        res.setData(response);
+
+        return res;
+
+
     }
 
 
