@@ -1,9 +1,8 @@
 package com.dna.controller;
 
 
+import com.dna.entity.ResultDto;
 import com.dna.utils.ESClient;
-import com.dna.utils.ResultDto;
-import lombok.SneakyThrows;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -21,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 @RestController
 @RequestMapping("/city")
 public class ClientController {
@@ -36,11 +37,10 @@ public class ClientController {
      * @author: SUJUN
      * @time: 2020/10/19 16:34
      */
-    @SneakyThrows
     @RequestMapping("/cityInfo")
     public ResultDto getCityInfo(@RequestParam(value = "keyword", required = true) String keyword,
                                  @RequestParam(value = "from", required = true) Integer from,
-                                 @RequestParam(value = "size", required = true) Integer size) {
+                                 @RequestParam(value = "size", required = true) Integer size) throws IOException {
 
         ResultDto res = new ResultDto();
 
@@ -62,9 +62,8 @@ public class ClientController {
      * @author: SUJUN
      * @time: 2020/10/19 16:57
      */
-    @SneakyThrows
-    @RequestMapping("/scroll")
-    public ResultDto scroll(String scrollId) {
+    @RequestMapping("/scrollQuery")
+    public ResultDto scrollQuery(String scrollId) throws IOException {
         ResultDto res = new ResultDto();
 
         SearchRequest searchRequest = new SearchRequest("push_msg");
@@ -92,9 +91,8 @@ public class ClientController {
      * @author: SUJUN
      * @time: 2020/10/19 17:51
      */
-    @SneakyThrows
     @RequestMapping("/bulkCRUD")
-    public ResultDto bulkCRUD() {
+    public ResultDto bulkCRUD() throws IOException {
         ResultDto res = new ResultDto();
 
         BulkRequest request = new BulkRequest("test_sj");
@@ -115,9 +113,8 @@ public class ClientController {
      * @author: SUJUN
      * @time: 2020/10/19 18:24
      */
-    @SneakyThrows
     @RequestMapping("/fuzzyQuery")
-    public ResultDto fuzzyQuery(String name) {   //"传祺GS0"
+    public ResultDto fuzzyESQuery(String name) throws IOException {   //"传祺GS0"
         ResultDto res = new ResultDto();
 
         SearchRequest searchRequest = new SearchRequest("service_objs_join_vehicle");
@@ -138,9 +135,8 @@ public class ClientController {
      * @author: SUJUN
      * @time: 2020/10/19 18:40
      */
-    @SneakyThrows
     @RequestMapping("/termQuery")
-    public ResultDto termQuery(String name) {
+    public ResultDto termESQuery(String name) throws IOException {
         ResultDto res = new ResultDto();
 
         SearchRequest searchRequest = new SearchRequest("service_objs_join_vehicle");
@@ -160,9 +156,8 @@ public class ClientController {
      * @author: SUJUN
      * @time: 2020/10/19 18:41
      */
-    @SneakyThrows
     @RequestMapping("/prefixQuery")
-    public ResultDto prefixQuery(String name) {
+    public ResultDto prefixESQuery(String name) throws IOException {
         ResultDto res = new ResultDto();
 
         SearchRequest searchRequest = new SearchRequest("service_objs_join_vehicle");
@@ -183,9 +178,8 @@ public class ClientController {
      * @author: SUJUN
      * @time: 2020/10/19 18:55
      */
-    @SneakyThrows
     @RequestMapping("/matchQuery")
-    public ResultDto matchQuery(String name) {
+    public ResultDto matchESQuery(String name) throws IOException {
         ResultDto res = new ResultDto();
 
         SearchRequest searchRequest = new SearchRequest("service_objs_join_vehicle");
@@ -206,9 +200,8 @@ public class ClientController {
      * @author: SUJUN
      * @time: 2020/10/19 19:07
      */
-    @SneakyThrows
     @RequestMapping("/multiSearch")
-    public ResultDto multiSearch() {
+    public ResultDto multiSearch() throws IOException {
         ResultDto res = new ResultDto();
         MultiSearchRequest request = new MultiSearchRequest();
 
@@ -231,25 +224,32 @@ public class ClientController {
     }
 
 
-    @SneakyThrows
+    /**
+     * @param
+     * @description: boolSearch 多条件查询
+     * @return: com.dna.entity.ResultDto
+     * @author: SUJUN
+     * @time: 2020/10/20 14:33
+     */
     @RequestMapping("/boolSearch")
-    public ResultDto boolSearch() {
+    public ResultDto boolSearch() throws IOException {
         ResultDto res = new ResultDto();
-
         MultiSearchRequest request = new MultiSearchRequest();
 
         SearchRequest searchRequest = new SearchRequest("service_objs_join_vehicle");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query
-                (
-                        QueryBuilders.boolQuery()
-                                .must(matchPhraseQuery("    "))
-                                .filter(matchQuery("product_name", "12").)
-                        .mustNot(matchQuery("product_name","12"))
-                );
+        searchSourceBuilder.query(QueryBuilders.boolQuery()
+//                        .must(QueryBuilders.matchQuery("product_name", "宝马").analyzer("ik_smart"))  //注意分词影响
+                        .must(QueryBuilders.matchPhraseQuery("product_name", "宝马"))
+                        .filter(QueryBuilders.termQuery("shake_threshold", "3000"))
+                        .mustNot(QueryBuilders.termQuery("brand_name.keyword", "宝马"))
+//                .should(QueryBuilders.termQuery("",""))
+        );
 
-
-        res.setData(response);
+        searchRequest.source(searchSourceBuilder);
+        request.add(searchRequest);
+        MultiSearchResponse response = client.msearch(request, RequestOptions.DEFAULT);
+        res.setData(response.getResponses());
 
         return res;
 

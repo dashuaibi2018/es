@@ -6,7 +6,6 @@ import com.dna.service.CityService;
 import com.dna.service.ProductService;
 import com.dna.utils.ESClient;
 import com.google.gson.Gson;
-import lombok.SneakyThrows;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -282,9 +281,8 @@ class RestHighLevelTests {
      * @author: SUJUN
      * @time: 2020/10/19 10:01
      */
-    @SneakyThrows
     @Test
-    public void bulkInit() {
+    public void bulkInit() throws IOException {
 
         RestHighLevelClient client = ESClient.getInstance().getHighLevelClient();
         GetIndexRequest request = new GetIndexRequest("test_city");

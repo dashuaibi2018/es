@@ -2,7 +2,6 @@ package com.dna;
 
 import com.dna.entity.Product;
 import com.dna.service.ProductService;
-import lombok.SneakyThrows;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -26,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.format.DateTimeFormatter;
@@ -53,8 +53,7 @@ public class TransportTests {
 
 
     @Test
-    @SneakyThrows
-    void esCRUD() {
+    void esCRUD() throws UnknownHostException {
         Settings settings = Settings.builder().put("cluster.name", "docker-cluster").build();
         TransportClient client = new PreBuiltTransportClient(settings)
                 .addTransportAddress(new TransportAddress(InetAddress.getByName("192.168.2.202"), 9300));
@@ -82,8 +81,7 @@ public class TransportTests {
     }
 
     @Test
-    @SneakyThrows
-    void create() {
+    void create() throws IOException {
         List<Product> list = service.list();
         for (Product item : list) {
             System.out.println(item.getCreatetime().toLocalDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
@@ -127,8 +125,7 @@ public class TransportTests {
 
     }
 
-    @SneakyThrows
-    void update(TransportClient client) {
+    void update(TransportClient client) throws IOException {
         UpdateResponse response = client.prepareUpdate("product2", "_doc", "1")
                 .setDoc(XContentFactory.jsonBuilder().startObject()
                         .field("name", "new name").endObject())
