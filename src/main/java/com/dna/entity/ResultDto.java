@@ -1,10 +1,29 @@
 package com.dna.entity;
 
 public class ResultDto {
+    private String total;
+    private String costTime;
+    private Object data;
     private String resultCode;
     private String resultMessage;
-    private Object data;
-    private String Tag;
+    private String tag;
+
+    public String getCostTime() {
+        return costTime;
+    }
+
+    public void setCostTime(String costTime) {
+        this.costTime = costTime;
+    }
+
+    public String getTotal() {
+        return total;
+    }
+
+    public void setTotal(String total) {
+        this.total = total;
+    }
+
 
     public String getResultCode() {
         return resultCode;
@@ -31,20 +50,23 @@ public class ResultDto {
     }
 
     public String getTag() {
-        return Tag;
+        return tag;
     }
 
     public void setTag(String tag) {
-        Tag = tag;
+        this.tag = tag;
     }
+
 
     @Override
     public String toString() {
         return "ResultDto{" +
-                "resultCode='" + resultCode + '\'' +
-                ", resultMessage='" + resultMessage + '\'' +
+                "total='" + total + '\'' +
+                ", costTime='" + costTime + '\'' +
                 ", data=" + data +
-                ", Tag='" + Tag + '\'' +
+                ", resultCode='" + resultCode + '\'' +
+                ", resultMessage='" + resultMessage + '\'' +
+                ", tag='" + tag + '\'' +
                 '}';
     }
 }

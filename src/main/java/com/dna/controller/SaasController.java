@@ -3,7 +3,7 @@ package com.dna.controller;
 
 import com.dna.entity.ResultDto;
 import com.dna.utils.ESClient;
-import com.google.gson.Gson;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
@@ -11,12 +11,20 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.BucketOrder;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
+import org.elasticsearch.search.aggregations.metrics.Sum;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @RestController
@@ -68,9 +76,8 @@ public class SaasController {
 
         request.add(searchRequest);
         MultiSearchResponse response = client.msearch(request, RequestOptions.DEFAULT);
-        res.setData(response.getResponses());
 
-        return res;
+        return getMultiRes(response);
     }
 
 
@@ -110,9 +117,8 @@ public class SaasController {
 
         request.add(searchRequest);
         MultiSearchResponse response = client.msearch(request, RequestOptions.DEFAULT);
-        res.setData(response.getResponses());
 
-        return res;
+        return getMultiRes(response);
     }
 
 
@@ -131,18 +137,101 @@ public class SaasController {
         SearchRequest searchRequest = new SearchRequest("service_objs_join_vehicle");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.boolQuery()
-                .must(QueryBuilders.termQuery("status", "1"))
-                .must(QueryBuilders.termQuery("rec_status", "1"))
-                .must(QueryBuilders.prefixQuery("license_plate_no.keyword", "苏A6A5M0"))
+                .filter(QueryBuilders.termQuery("status", "1"))
+                .filter(QueryBuilders.termQuery("rec_status", "1"))
+                .filter(QueryBuilders.prefixQuery("license_plate_no.keyword", "苏A6A5M0"))
         ).from(0).size(20);
 
-//        searchSourceBuilder.sort("alarm_time", SortOrder.DESC).from(0).size(20);
+        searchSourceBuilder.sort("creat_time", SortOrder.DESC).from(0).size(10);
         searchRequest.source(searchSourceBuilder);
 
         request.add(searchRequest);
         MultiSearchResponse response = client.msearch(request, RequestOptions.DEFAULT);
-        res.setData(response.getResponses());
 
+        return getMultiRes(response);
+    }
+
+    /**
+     * @param
+     * @description: device_status_vehicle_summary 查询统计表的油耗
+     * @return: com.dna.entity.ResultDto
+     * @author: SUJUN
+     * @time: 2020/10/20 14:33
+     */
+    @RequestMapping("/oilWearSearch")
+    public ResultDto oilWearSearch(HashMap<String, Object> reqMap) throws IOException {
+        ResultDto res = new ResultDto();
+        MultiSearchRequest request = new MultiSearchRequest();
+
+        SearchRequest searchRequest = new SearchRequest("device_status_vehicle_summary");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.boolQuery()
+                .filter(QueryBuilders.rangeQuery("summary_date").timeZone("Asia/Shanghai").format("yyyy-MM-dd HH:mm:ss").gte("2019-10-01 00:00:00").lte("2020-09-25 23:59:59"))
+                .filter(QueryBuilders.termQuery("is_contract", "1"))
+                .filter(QueryBuilders.termQuery("operator_corp_id", "dinacarrier"))
+                .filter(QueryBuilders.termQuery("corp_id", "12120710341890007"))
+        ).aggregation(
+                AggregationBuilders.dateHistogram("by_summary_date")
+                        .order(BucketOrder.aggregation("_key", true))  //时间区间聚合按_key升序
+//                        .order(BucketOrder.key(true))   //按桶的英文字母升序
+//                        .order(BucketOrder.count(false))  //按桶的doc_count升序
+//                        .order(BucketOrder.aggregation("distanceTotal",true)) //按单值 度量子聚合 (由聚合名称标识)对桶进行排序
+                        .timeZone(ZoneId.of("Asia/Shanghai"))
+                        .field("summary_date").calendarInterval(DateHistogramInterval.MONTH)
+                        .subAggregation(AggregationBuilders.sum("distanceTotal").field("distance_total"))
+                        .subAggregation(AggregationBuilders.sum("fuel").field("fuel_consumption"))
+                        .subAggregation(AggregationBuilders.sum("time").field("drive_duration"))
+        );
+
+//        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+//        TermsAggregationBuilder aggregation = AggregationBuilders.terms("by_company")
+//                .field("company.keyword");
+//        aggregation.subAggregation(AggregationBuilders.avg("average_age")
+//                .field("age"));
+//        searchSourceBuilder.aggregation(aggregation);
+
+        searchSourceBuilder.size(0).trackTotalHits(true);
+        searchRequest.source(searchSourceBuilder);
+
+        request.add(searchRequest);
+        MultiSearchResponse response = client.msearch(request, RequestOptions.DEFAULT);
+
+        //处理返回结果集
+        Aggregation summaryDate = response.getResponses()[0].getResponse().getAggregations().get("by_summary_date");
+        Histogram bySummaryDate = (Histogram) summaryDate;
+        Iterator<? extends Histogram.Bucket> buckets = bySummaryDate.getBuckets().iterator();
+
+        while (buckets.hasNext()) {
+            Histogram.Bucket dateBucket = buckets.next();
+            System.out.println("\n\n月份 " + dateBucket.getKeyAsString() + "\n计数：" + dateBucket.getDocCount());
+
+//            Aggregation fuelAgg = dateBucket.getAggregations().get("fuel");
+//            Sum fuelSum = (Sum) fuelAgg;
+//            System.out.println("名称 "+ fuelAgg.getName() + "count为 " + fuelSum.getValue());
+            Iterator<Aggregation> sumIter = dateBucket.getAggregations().iterator();
+            while (sumIter.hasNext()) {
+                Sum next = (Sum) sumIter.next();
+                System.out.println("name: "+ next.getName() + "  count: " + (int)next.value());//new Double(next.value()).intValue()
+            }
+
+        }
+
+        return getMultiRes(response);
+    }
+
+
+    /**
+     * @param response
+     * @description: 封装返回对象公共方法
+     * @return: com.dna.entity.ResultDto
+     * @author: SUJUN
+     * @time: 2020/10/21 14:09
+     */
+    public ResultDto getMultiRes(MultiSearchResponse response) {
+        ResultDto res = new ResultDto();
+        res.setData(response.getResponses());
+        res.setTotal(ObjectUtils.toString(response.getResponses()[0].getResponse().getHits().getTotalHits().value));
+        res.setCostTime(response.getResponses()[0].getResponse().getTook().toString());
         return res;
     }
 

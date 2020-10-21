@@ -6,6 +6,7 @@ import com.dna.service.CityService;
 import com.dna.service.ProductService;
 import com.dna.utils.ESClient;
 import com.google.gson.Gson;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -307,5 +308,11 @@ class RestHighLevelTests {
         ESClient.getInstance().closeClient();
     }
 
+
+
+    @Test
+    public void test(){
+        System.out.println(ObjectUtils.toString("1:---"+""));
+    }
 
 }
