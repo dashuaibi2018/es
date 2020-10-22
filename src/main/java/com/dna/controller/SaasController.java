@@ -213,7 +213,6 @@ public class SaasController {
                 Sum next = (Sum) sumIter.next();
                 System.out.println("name: "+ next.getName() + "  count: " + (int)next.value());//new Double(next.value()).intValue()
             }
-
         }
 
         return getMultiRes(response);
@@ -234,6 +233,5 @@ public class SaasController {
         res.setCostTime(response.getResponses()[0].getResponse().getTook().toString());
         return res;
     }
-
 
 }
