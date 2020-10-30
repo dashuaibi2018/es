@@ -139,7 +139,8 @@ public class SaasController {
         searchSourceBuilder.query(QueryBuilders.boolQuery()
                 .filter(QueryBuilders.termQuery("status", "1"))
                 .filter(QueryBuilders.termQuery("rec_status", "1"))
-                .filter(QueryBuilders.prefixQuery("license_plate_no.keyword", "苏A6A5M0"))
+//                .filter(QueryBuilders.prefixQuery("license_plate_no.keyword", "苏A6A5M0"))
+                .filter(QueryBuilders.wildcardQuery("license_plate_no.keyword","*6A5*"))
         ).from(0).size(20);
 
         searchSourceBuilder.sort("creat_time", SortOrder.DESC).from(0).size(10);
