@@ -1,0 +1,62 @@
+Manifest-Version: 1.0
+Class-Path: jakarta.annotation-api-1.3.5.jar jopt-simple-5.0.2.jar net
+ ty-codec-4.1.52.Final.jar netty-common-4.1.52.Final.jar spring-boot-c
+ onfiguration-processor-2.3.4.RELEASE.jar lucene-analyzers-common-8.4.
+ 0.jar netty-transport-4.1.52.Final.jar hamcrest-2.2.jar httpcore-4.4.
+ 13.jar lucene-queries-8.4.0.jar lucene-memory-8.4.0.jar lucene-backwa
+ rd-codecs-8.4.0.jar lucene-spatial-extras-8.4.0.jar compiler-0.9.6.ja
+ r rank-eval-client-7.6.2.jar httpcore-nio-4.4.13.jar jna-4.5.1.jar my
+ batis-plus-extension-3.4.0.jar reindex-client-7.6.2.jar tomcat-embed-
+ core-9.0.38.jar spring-tx-5.2.9.RELEASE.jar dubbo-spring-boot-autocon
+ figure-compatible-2.7.8.jar mybatis-plus-boot-starter-3.3.1.jar javas
+ sist-3.20.0-GA.jar checker-qual-2.5.2.jar mapper-extras-client-7.6.2.
+ jar lang-mustache-client-7.6.2.jar lucene-join-8.4.0.jar elasticsearc
+ h-rest-high-level-client-7.6.2.jar slf4j-api-1.7.30.jar spring-boot-s
+ tarter-web-2.3.4.RELEASE.jar spring-boot-starter-logging-2.3.4.RELEAS
+ E.jar commons-lang3-3.10.jar spring-jdbc-5.2.9.RELEASE.jar elasticsea
+ rch-7.6.2.jar netty-codec-http-4.1.52.Final.jar jsr305-3.0.2.jar list
+ enablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar lucene-que
+ ryparser-8.4.0.jar gson-2.8.6.jar elasticsearch-cli-7.6.2.jar lucene-
+ sandbox-8.4.0.jar spring-jcl-5.2.9.RELEASE.jar parent-join-client-7.6
+ .2.jar spring-boot-devtools-2.3.4.RELEASE.jar fastjson-1.2.70.jar gua
+ va-27.0.1-jre.jar commons-logging-1.1.3.jar spring-core-5.2.9.RELEASE
+ .jar elasticsearch-secure-sm-7.6.2.jar mysql-connector-java-8.0.18.ja
+ r netty-buffer-4.1.52.Final.jar jackson-dataformat-smile-2.11.2.jar e
+ lasticsearch-rest-client-sniffer-7.6.2.jar j2objc-annotations-1.1.jar
+  lucene-suggest-8.4.0.jar mybatis-plus-core-3.4.0.jar t-digest-3.2.ja
+ r error_prone_annotations-2.2.0.jar mybatis-3.5.5.jar jackson-core-2.
+ 11.2.jar HdrHistogram-2.1.9.jar junit-4.13.jar zookeeper-3.4.6.jar sp
+ ring-web-5.2.9.RELEASE.jar spring-boot-starter-tomcat-2.3.4.RELEASE.j
+ ar jsqlparser-3.2.jar aggs-matrix-stats-client-7.6.2.jar spring-boot-
+ starter-jdbc-2.3.4.RELEASE.jar hppc-0.8.1.jar joda-time-2.10.4.jar ne
+ tty-resolver-4.1.52.Final.jar elasticsearch-core-7.6.2.jar tomcat-emb
+ ed-websocket-9.0.38.jar spring-boot-starter-json-2.3.4.RELEASE.jar sp
+ ring-webmvc-5.2.9.RELEASE.jar elasticsearch-x-content-7.6.2.jar netty
+ -3.7.0.Final.jar jline-0.9.94.jar log4j-to-slf4j-2.13.3.jar jackson-a
+ nnotations-2.11.2.jar jackson-module-parameter-names-2.11.2.jar sprin
+ g-data-commons-2.3.4.RELEASE.jar log4j-1.2.16.jar hamcrest-core-2.2.j
+ ar jackson-datatype-jsr310-2.11.2.jar curator-framework-4.2.0.jar htt
+ pasyncclient-4.1.4.jar velocity-engine-core-2.2.jar dubbo-2.7.8.jar p
+ ercolator-client-7.6.2.jar mybatis-plus-annotation-3.4.0.jar slf4j-lo
+ g4j12-1.7.30.jar spring-aop-5.2.9.RELEASE.jar jackson-dataformat-cbor
+ -2.11.2.jar spring-context-support-1.0.8.jar elasticsearch-rest-clien
+ t-7.6.2.jar mybatis-plus-3.3.1.jar lucene-highlighter-8.4.0.jar netty
+ -all-4.1.52.Final.jar httpclient-4.5.12.jar jakarta.el-3.0.3.jar comm
+ ons-codec-1.14.jar jackson-dataformat-yaml-2.11.2.jar elasticsearch-s
+ sl-config-7.6.2.jar spring-boot-starter-data-elasticsearch-2.3.4.RELE
+ ASE.jar curator-client-4.2.0.jar HikariCP-3.4.5.jar transport-7.6.2.j
+ ar logback-classic-1.2.3.jar lucene-spatial-8.4.0.jar animal-sniffer-
+ annotations-1.17.jar jackson-datatype-jdk8-2.11.2.jar jackson-databin
+ d-2.11.2.jar jul-to-slf4j-1.7.30.jar netty-handler-4.1.52.Final.jar s
+ nakeyaml-1.26.jar log4j-api-2.13.3.jar spring-boot-autoconfigure-2.3.
+ 4.RELEASE.jar mybatis-spring-2.0.5.jar lucene-spatial3d-8.4.0.jar dub
+ bo-spring-boot-autoconfigure-2.7.8.jar logback-core-1.2.3.jar spring-
+ expression-5.2.9.RELEASE.jar spring-data-elasticsearch-4.0.4.RELEASE.
+ jar curator-recipes-4.2.0.jar lucene-grouping-8.4.0.jar lucene-core-8
+ .4.0.jar spring-boot-starter-2.3.4.RELEASE.jar spring-context-5.2.9.R
+ ELEASE.jar spring-boot-2.3.4.RELEASE.jar transport-netty4-client-7.6.
+ 2.jar lucene-misc-8.4.0.jar spring-beans-5.2.9.RELEASE.jar dubbo-spri
+ ng-boot-starter-2.7.8.jar failureaccess-1.0.1.jar elasticsearch-geo-7
+ .6.2.jar mybatis-plus-generator-3.4.0.jar
+Main-Class: com.dna.EsapiApplication
+
