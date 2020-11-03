@@ -1,20 +1,20 @@
 package com.dna.entity;
 
-public class ResultDto {
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ResultDto implements Serializable {
     private String total;
     private String costTime;
     private Object data;
-    private String resultCode;
-    private String resultMessage;
+    //    private String resultCode;
+//    private String resultMessage;
     private String tag;
-
-    public String getCostTime() {
-        return costTime;
-    }
-
-    public void setCostTime(String costTime) {
-        this.costTime = costTime;
-    }
+    List<Map<String, Object>> recordList = new ArrayList<>();
+    Map<String, Object> categoryMap = new HashMap<>();
 
     public String getTotal() {
         return total;
@@ -24,21 +24,12 @@ public class ResultDto {
         this.total = total;
     }
 
-
-    public String getResultCode() {
-        return resultCode;
+    public String getCostTime() {
+        return costTime;
     }
 
-    public void setResultCode(String resultCode) {
-        this.resultCode = resultCode;
-    }
-
-    public String getResultMessage() {
-        return resultMessage;
-    }
-
-    public void setResultMessage(String resultMessage) {
-        this.resultMessage = resultMessage;
+    public void setCostTime(String costTime) {
+        this.costTime = costTime;
     }
 
     public Object getData() {
@@ -57,6 +48,21 @@ public class ResultDto {
         this.tag = tag;
     }
 
+    public List<Map<String, Object>> getRecordList() {
+        return recordList;
+    }
+
+    public void setRecordList(List<Map<String, Object>> recordList) {
+        this.recordList = recordList;
+    }
+
+    public Map<String, Object> getCategoryMap() {
+        return categoryMap;
+    }
+
+    public void setCategoryMap(Map<String, Object> categoryMap) {
+        this.categoryMap = categoryMap;
+    }
 
     @Override
     public String toString() {
@@ -64,9 +70,9 @@ public class ResultDto {
                 "total='" + total + '\'' +
                 ", costTime='" + costTime + '\'' +
                 ", data=" + data +
-                ", resultCode='" + resultCode + '\'' +
-                ", resultMessage='" + resultMessage + '\'' +
                 ", tag='" + tag + '\'' +
+                ", recordList=" + recordList +
+                ", categoryMap=" + categoryMap +
                 '}';
     }
 }

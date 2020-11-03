@@ -3,13 +3,17 @@ package com.dna.service.impl;
 import com.dna.entity.ResultDto;
 import com.dna.service.ISaasService;
 import com.dna.utils.ESClient;
+import com.google.gson.Gson;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.BucketOrder;
@@ -22,11 +26,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 
+@DubboService(version = "1.0.0", timeout = 10000, interfaceClass = ISaasService.class)
 @Service
 public class SaasServiceImpl implements ISaasService {
 
@@ -35,18 +37,11 @@ public class SaasServiceImpl implements ISaasService {
     @Override
     public ResultDto alarmMsgSearch(HashMap<String, Object> reqMap) throws IOException {
 
-        ResultDto res = new ResultDto();
         MultiSearchRequest request = new MultiSearchRequest();
 
-        ArrayList<String> objIdList = new ArrayList<>();
-        Collections.addAll(objIdList, "18061110594379843", "18061209415874994", "18062912132930390", "18062914000298718", "18061110541928130", "66f55f543904437e98bce96a96903702", "677e464ec96d4cebb7903d902ae7186f", "edb2748cf51f42a5accf83bded7d3ec3", "1647b0c7b5ae43e781d2dc6234747c49", "19031415052563108", "22638356f9fb4468b5ed9c91bd442a9a", "26805c2ce6e848a4969feaafdd2b2f4b", "4e3b82c4db164eacb08322f249484704", "5b134d658f8e4863b5c6f03c3645ed55", "6ba3bc809a02499d9204ec334a87421d", "a1b87f86758c41e6b05ae176aa684de2", "18061110550768395", "18061209445476031", "e5d89ee8a0cd481ab57277ece65e1337", "18090518224140332", "aecdae7d7055476dac0a193729407923", "882f572381914d57b1a62657ca9ae764", "c6371ea71ba641aab74dcfed13c9499c", "ff6eafbd52194c539c9d0924496b4e71", "0385772f9123490eb624b9607357e3a3", "165f0c86981547629ceb5a7bfa112cdf", "18061209455676438", "19052318241678680", "19052318251978892", "1b5e29819502466ea3a53b42fd0c58e6", "1c985e7f56124d2bbf1f2baffa035ba4", "20011412550798793", "20011413100890083", "2d8a2922868244f094d27050431f6cbb", "2f2f407762324d66968e44fe5c8169bd", "3204d4163c39418c84568c8d21c7d7da", "4ae51c30712c4fe8ad7709bbe43a4d87", "4f73fc4d968f4e7ebc7bb3dd0bae3e5f", "57c978529848477ea782c9f4437bb4dc", "718a0e99ec95459ba93b385032721757", "766e53803697416bb3264c6f44917ee0", "7991114af1bc479c87cd40c27a1b23cf", "85a950ae03f8424aac237171e1721312", "92fd976f83a048a7a6b0a8d4941b44ff", "93b21abae55547169e46a23fb21b6174", "98cde790ca6f4442b0352a3c54e1862c", "a442cc46580f4d07ae5f35eb154a4b4b", "a6b06be796ab47e0b37fde04c008aba0", "ab2a4720cf924817be706e39fcb9325c", "bc6cefefdeca4d9ba656a407b3b2da10", "e596aa0aaa2f4bdfa6adf7078e3dbcfc", "fdda47eb8ce7473489fe165618a2c7a3");
-
-        ArrayList<String> alarmTypeList = new ArrayList<>();
-        Collections.addAll(alarmTypeList, "200", "201", "202", "203");
-
-        reqMap.put("obj_id", objIdList);
-        reqMap.put("alarm_type", alarmTypeList);
-        reqMap.put("handle_status", "0");
+        ArrayList<String> objIdList = (ArrayList<String>) reqMap.get("obj_id");
+        ArrayList<String> alarmTypeList = (ArrayList<String>) reqMap.get("alarm_type");
+        String handle_status = ObjectUtils.toString(reqMap.get("handle_status"));
 
 //        System.out.println(reqMap);
 //        System.out.println("--------------------------------------------------------------------------------------------------");
@@ -61,7 +56,7 @@ public class SaasServiceImpl implements ISaasService {
 //                        .must(QueryBuilders.termsQuery("alarm_type", alarmTypeList))
 //                        .must(QueryBuilders.termQuery("handle_status", 0))
                         .filter(QueryBuilders.termsQuery("alarm_type", alarmTypeList))
-                        .filter(QueryBuilders.termQuery("handle_status", 0))
+                        .filter(QueryBuilders.termQuery("handle_status", handle_status))
         );
         searchSourceBuilder.sort("alarm_time", SortOrder.DESC).from(0).size(20);
         searchRequest.source(searchSourceBuilder);
@@ -76,7 +71,6 @@ public class SaasServiceImpl implements ISaasService {
     @Override
     public ResultDto pushMsgSearch(HashMap<String, Object> reqMap) throws IOException {
 
-        ResultDto res = new ResultDto();
         MultiSearchRequest request = new MultiSearchRequest();
 
         ArrayList<String> receivedList = new ArrayList<>();
@@ -109,7 +103,6 @@ public class SaasServiceImpl implements ISaasService {
     @Override
     public ResultDto carNoSearch(HashMap<String, Object> reqMap) throws IOException {
 
-        ResultDto res = new ResultDto();
         MultiSearchRequest request = new MultiSearchRequest();
 
         SearchRequest searchRequest = new SearchRequest("service_objs_join_vehicle");
@@ -135,7 +128,6 @@ public class SaasServiceImpl implements ISaasService {
     @Override
     public ResultDto oilWearSearch(HashMap<String, Object> reqMap) throws IOException {
 
-        ResultDto res = new ResultDto();
         MultiSearchRequest request = new MultiSearchRequest();
 
         SearchRequest searchRequest = new SearchRequest("device_status_vehicle_summary");
@@ -194,7 +186,6 @@ public class SaasServiceImpl implements ISaasService {
     }
 
 
-
     /**
      * @param response
      * @description: 封装返回对象公共方法
@@ -204,8 +195,20 @@ public class SaasServiceImpl implements ISaasService {
      */
     public ResultDto getMultiRes(MultiSearchResponse response) {
         ResultDto res = new ResultDto();
-        res.setData(response.getResponses());
-        res.setTotal(ObjectUtils.toString(response.getResponses()[0].getResponse().getHits().getTotalHits().value));
+        List<Map<String, Object>> recordList = new ArrayList<>();
+
+        SearchHits hits = response.getResponses()[0].getResponse().getHits();
+        SearchHit[] searchHits = hits.getHits();
+        for (SearchHit hit : searchHits) {
+            Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+            recordList.add(sourceAsMap);
+        }
+
+        System.out.println(new Gson().toJson(recordList));
+
+//        res.setData(response.getResponses()[0].getResponse().getHits().getHits());
+        res.setRecordList(recordList);
+        res.setTotal(ObjectUtils.toString(hits.getTotalHits().value));
         res.setCostTime(response.getResponses()[0].getResponse().getTook().toString());
         return res;
     }
