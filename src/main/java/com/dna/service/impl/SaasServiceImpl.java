@@ -108,8 +108,8 @@ public class SaasServiceImpl implements ISaasService {
         searchSourceBuilder.query(QueryBuilders.boolQuery()
                         .filter(QueryBuilders.termQuery("status", reqMap.get("status")))
                         .filter(QueryBuilders.termQuery("rec_status", reqMap.get("rec_status")))
-//                        .filter(QueryBuilders.prefixQuery("license_plate_no.keyword", reqMap.get("license_plate_no").toString()))
-                        .filter(QueryBuilders.wildcardQuery("license_plate_no.keyword", reqMap.get("license_plate_no").toString()))
+                        .filter(QueryBuilders.prefixQuery("license_plate_no.keyword", reqMap.get("license_plate_no").toString()))
+//                        .filter(QueryBuilders.wildcardQuery("license_plate_no.keyword", reqMap.get("license_plate_no").toString()))
         ).from(pageFrom).size(pageSize)
                 .fetchSource("license_plate_no,obj_id".split(","), null);
 

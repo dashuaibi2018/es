@@ -87,8 +87,8 @@ public class SaasController {
 
         reqMap.put("status", "1");
         reqMap.put("rec_status", "1");
-//        reqMap.put("license_plate_no", "苏A6A5M0"); //前缀查询
-        reqMap.put("license_plate_no", "*6A5*"); //通配符查询
+        reqMap.put("license_plate_no", "苏A6A5M0"); //前缀查询
+//        reqMap.put("license_plate_no", "*6A5*"); //通配符查询
         reqMap.put("sortField", "creat_time");
         reqMap.put("sortOrder", "desc");
 
