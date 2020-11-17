@@ -109,6 +109,13 @@ public class SaasController {
     @RequestMapping("/oilWearSearch")
     public ResultDto oilWearSearch(HashMap<String, Object> reqMap) throws IOException {
 
+        reqMap.put("startTime", "2019-10-01 00:00:00");
+        reqMap.put("endTime", "2020-09-25 23:59:59");
+
+        reqMap.put("is_contract", "1"); //通配符查询
+        reqMap.put("operator_corp_id", "dinacarrier");
+        reqMap.put("corp_id", "12120710341890007");
+
         ResultDto resultDto = saasService.oilWearSearch(reqMap);
         return resultDto;
 

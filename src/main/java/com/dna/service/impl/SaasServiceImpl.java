@@ -78,12 +78,12 @@ public class SaasServiceImpl implements ISaasService {
         SearchRequest searchRequest = new SearchRequest("push_msg");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery("user_id", reqMap.get("user_id")))
-                        .must(QueryBuilders.termQuery("app_name.keyword", reqMap.get("app_name")))
-                        .must(QueryBuilders.termsQuery("received", (ArrayList<String>) reqMap.get("receivedList")))
-                        .must(QueryBuilders.termsQuery("msg_type", (ArrayList<String>) reqMap.get("msgTypeList")))
-                        .must(QueryBuilders.termQuery("push_mode", reqMap.get("push_mode")))
-                        .mustNot(QueryBuilders.termQuery("clean_flag", reqMap.get("clean_flag")))
+                .must(QueryBuilders.termQuery("user_id", reqMap.get("user_id")))
+                .must(QueryBuilders.termQuery("app_name.keyword", reqMap.get("app_name")))
+                .must(QueryBuilders.termsQuery("received", (ArrayList<String>) reqMap.get("receivedList")))
+                .must(QueryBuilders.termsQuery("msg_type", (ArrayList<String>) reqMap.get("msgTypeList")))
+                .must(QueryBuilders.termQuery("push_mode", reqMap.get("push_mode")))
+                .mustNot(QueryBuilders.termQuery("clean_flag", reqMap.get("clean_flag")))
         ).from(pageFrom).size(pageSize)
                 .fetchSource("app_name,received,msg_type,clean_flag".split(","), null);
 //        searchSourceBuilder.sort("alarm_time", SortOrder.DESC).from(pageFrom).size(pageSize);
@@ -132,10 +132,10 @@ public class SaasServiceImpl implements ISaasService {
         SearchRequest searchRequest = new SearchRequest("device_status_vehicle_summary");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.boolQuery()
-                .filter(QueryBuilders.rangeQuery("summary_date").timeZone("Asia/Shanghai").format("yyyy-MM-dd HH:mm:ss").gte("2019-10-01 00:00:00").lte("2020-09-25 23:59:59"))
-                .filter(QueryBuilders.termQuery("is_contract", "1"))
-                .filter(QueryBuilders.termQuery("operator_corp_id", "dinacarrier"))
-                .filter(QueryBuilders.termQuery("corp_id", "12120710341890007"))
+                .filter(QueryBuilders.rangeQuery("summary_date").timeZone("Asia/Shanghai").format("yyyy-MM-dd HH:mm:ss").gte(reqMap.get("startTime")).lte(reqMap.get("endTime")))
+                .filter(QueryBuilders.termQuery("is_contract", reqMap.get("is_contract")))
+                .filter(QueryBuilders.termQuery("operator_corp_id", reqMap.get("operator_corp_id")))
+                .filter(QueryBuilders.termQuery("corp_id", reqMap.get("corp_id")))
         ).aggregation(
                 AggregationBuilders.dateHistogram("by_summary_date")
                         .order(BucketOrder.aggregation("_key", true))  //时间区间聚合按_key升序
