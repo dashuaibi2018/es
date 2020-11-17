@@ -33,15 +33,15 @@ import java.util.*;
 public class SaasServiceImpl implements ISaasService {
 
     RestHighLevelClient client = ESClient.getInstance().getHighLevelClient();
+    private SortOrder order;
 
     @Override
     public ResultDto alarmMsgSearch(HashMap<String, Object> reqMap) throws IOException {
 
         MultiSearchRequest request = new MultiSearchRequest();
 
-        ArrayList<String> objIdList = (ArrayList<String>) reqMap.get("obj_id");
-        ArrayList<String> alarmTypeList = (ArrayList<String>) reqMap.get("alarm_type");
-        String handle_status = ObjectUtils.toString(reqMap.get("handle_status"));
+        int pageFrom = Integer.parseInt(reqMap.get("pageFrom").toString());
+        int pageSize = Integer.parseInt(reqMap.get("pageSize").toString());
 
 //        System.out.println(reqMap);
 //        System.out.println("--------------------------------------------------------------------------------------------------");
@@ -52,13 +52,12 @@ public class SaasServiceImpl implements ISaasService {
         SearchRequest searchRequest = new SearchRequest("biz_alarm_msg");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termsQuery("obj_id", objIdList))
+                        .must(QueryBuilders.termsQuery("obj_id", (ArrayList<String>) reqMap.get("objIdList")))
 //                        .must(QueryBuilders.termsQuery("alarm_type", alarmTypeList))
-//                        .must(QueryBuilders.termQuery("handle_status", 0))
-                        .filter(QueryBuilders.termsQuery("alarm_type", alarmTypeList))
-                        .filter(QueryBuilders.termQuery("handle_status", handle_status))
+                        .filter(QueryBuilders.termsQuery("alarm_type", (ArrayList<String>) reqMap.get("alarmTypeList")))
+                        .filter(QueryBuilders.termQuery("handle_status", reqMap.get("handle_status")))
         );
-        searchSourceBuilder.sort("alarm_time", SortOrder.DESC).from(0).size(20);
+        searchSourceBuilder.sort("alarm_time", SortOrder.DESC).from(pageFrom).size(pageSize);
         searchRequest.source(searchSourceBuilder);
 
         request.add(searchRequest);
@@ -73,25 +72,21 @@ public class SaasServiceImpl implements ISaasService {
 
         MultiSearchRequest request = new MultiSearchRequest();
 
-        ArrayList<String> receivedList = new ArrayList<>();
-        Collections.addAll(receivedList, "0", "1", "2");
-        ArrayList<String> msgTypeList = new ArrayList<>();
-        Collections.addAll(msgTypeList, "17");
+        int pageFrom = Integer.parseInt(reqMap.get("pageFrom").toString());
+        int pageSize = Integer.parseInt(reqMap.get("pageSize").toString());
 
         SearchRequest searchRequest = new SearchRequest("push_msg");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.termQuery("user_id", "16072415330002514"))
-//                        .must(QueryBuilders.termsQuery("alarm_type", alarmTypeList))
-//                        .must(QueryBuilders.termQuery("handle_status", 0))
-                        .must(QueryBuilders.termQuery("app_name.keyword", "HeXieQiChe"))
-                        .must(QueryBuilders.termsQuery("received", receivedList))
-                        .must(QueryBuilders.termsQuery("msg_type", msgTypeList))
-                        .must(QueryBuilders.termQuery("push_mode", "0"))
-                        .mustNot(QueryBuilders.termQuery("clean_flag", 1))
-        ).from(0).size(20)
+                        .must(QueryBuilders.termQuery("user_id", reqMap.get("user_id")))
+                        .must(QueryBuilders.termQuery("app_name.keyword", reqMap.get("app_name")))
+                        .must(QueryBuilders.termsQuery("received", (ArrayList<String>) reqMap.get("receivedList")))
+                        .must(QueryBuilders.termsQuery("msg_type", (ArrayList<String>) reqMap.get("msgTypeList")))
+                        .must(QueryBuilders.termQuery("push_mode", reqMap.get("push_mode")))
+                        .mustNot(QueryBuilders.termQuery("clean_flag", reqMap.get("clean_flag")))
+        ).from(pageFrom).size(pageSize)
                 .fetchSource("app_name,received,msg_type,clean_flag".split(","), null);
-//        searchSourceBuilder.sort("alarm_time", SortOrder.DESC).from(0).size(20);
+//        searchSourceBuilder.sort("alarm_time", SortOrder.DESC).from(pageFrom).size(pageSize);
         searchRequest.source(searchSourceBuilder);
 
         request.add(searchRequest);
@@ -105,17 +100,21 @@ public class SaasServiceImpl implements ISaasService {
 
         MultiSearchRequest request = new MultiSearchRequest();
 
+        int pageFrom = Integer.parseInt(reqMap.get("pageFrom").toString());
+        int pageSize = Integer.parseInt(reqMap.get("pageSize").toString());
+
         SearchRequest searchRequest = new SearchRequest("service_objs_join_vehicle");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.boolQuery()
-                        .filter(QueryBuilders.termQuery("status", "1"))
-                        .filter(QueryBuilders.termQuery("rec_status", "1"))
-//                .filter(QueryBuilders.prefixQuery("license_plate_no.keyword", "苏A6A5M0"))
-                        .filter(QueryBuilders.wildcardQuery("license_plate_no.keyword", "*6A5*"))
-        ).from(0).size(20)
-                .fetchSource("license_plate_no".split(","), null);
+                        .filter(QueryBuilders.termQuery("status", reqMap.get("status")))
+                        .filter(QueryBuilders.termQuery("rec_status", reqMap.get("rec_status")))
+//                        .filter(QueryBuilders.prefixQuery("license_plate_no.keyword", reqMap.get("license_plate_no").toString()))
+                        .filter(QueryBuilders.wildcardQuery("license_plate_no.keyword", reqMap.get("license_plate_no").toString()))
+        ).from(pageFrom).size(pageSize)
+                .fetchSource("license_plate_no,obj_id".split(","), null);
 
-        searchSourceBuilder.sort("creat_time", SortOrder.DESC).from(0).size(10);
+        SortOrder order = ObjectUtils.toString(reqMap.get("sortOrder")) == "desc" ? SortOrder.DESC : SortOrder.ASC;
+        searchSourceBuilder.sort(ObjectUtils.toString(reqMap.get("sortField")), order).from(pageFrom).size(pageSize);
         searchRequest.source(searchSourceBuilder);
 
         request.add(searchRequest);
