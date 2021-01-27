@@ -4,6 +4,7 @@ package com.dna.controller;
 import com.dna.entity.ResultDto;
 import com.dna.entity.req.AlarmMsgReq;
 import com.dna.entity.req.carNoReq;
+import com.dna.entity.req.oilWearReq;
 import com.dna.entity.req.pushMsgReq;
 import com.dna.service.ISaasService;
 import com.google.gson.Gson;
@@ -26,7 +27,7 @@ public class SaasController {
     ISaasService saasService;
 
     /**
-     * @param
+     * @param req
      * @description: biz_alarm_msg 查询
      * @return: com.dna.entity.ResultDto
      * @author: SUJUN
@@ -59,7 +60,7 @@ public class SaasController {
 
 
     /**
-     * @param
+     * @param req
      * @description: push_msg 查询
      * @return: com.dna.entity.ResultDto
      * @author: SUJUN
@@ -96,7 +97,7 @@ public class SaasController {
 
 
     /**
-     * @param
+     * @param req
      * @description: service_objs_join_vehicle 车牌号查询
      * @return: com.dna.entity.ResultDto
      * @author: SUJUN
@@ -130,22 +131,28 @@ public class SaasController {
     }
 
     /**
-     * @param
+     * @param req
      * @description: device_status_vehicle_summary 查询统计表的油耗
      * @return: com.dna.entity.ResultDto
      * @author: SUJUN
      * @time: 2020/10/20 14:33
      */
     @PostMapping("/oilWearSearch")
-    public ResultDto oilWearSearch() throws IOException {
+    public ResultDto oilWearSearch(@RequestBody @Validated oilWearReq req) throws IOException {
         Map<String, Object> reqMap = new HashMap<>();
-        reqMap.put("startTime", "2019-10-01 00:00:00");
-        reqMap.put("endTime", "2020-09-25 23:59:59");
 
-        reqMap.put("is_contract", "1"); //通配符查询
-        reqMap.put("operator_corp_id", "dinacarrier");
-        reqMap.put("corp_id", "12120710341890007");
-        String s = new Gson().toJson(reqMap);
+//        reqMap.put("startTime", "2019-10-01 00:00:00");
+//        reqMap.put("endTime", "2020-09-25 23:59:59");
+//        reqMap.put("is_contract", "1");
+//        reqMap.put("operator_corp_id", "dinacarrier");
+//        reqMap.put("corp_id", "12120710341890007");
+
+        reqMap.put("startTime", req.getStartTime());
+        reqMap.put("endTime", req.getEndTime());
+        reqMap.put("is_contract", req.getIs_contract());
+        reqMap.put("operator_corp_id", req.getOperator_corp_id());
+        reqMap.put("corp_id", req.getCorp_id());
+
         ResultDto resultDto = saasService.oilWearSearch(reqMap);
         return resultDto;
 
