@@ -36,7 +36,7 @@ public class SaasServiceImpl implements ISaasService {
     private SortOrder order;
 
     @Override
-    public ResultDto alarmMsgSearch(HashMap<String, Object> reqMap) throws IOException {
+    public ResultDto alarmMsgSearch(Map<String, Object> reqMap) throws IOException {
 
         MultiSearchRequest request = new MultiSearchRequest();
 
@@ -68,7 +68,7 @@ public class SaasServiceImpl implements ISaasService {
     }
 
     @Override
-    public ResultDto pushMsgSearch(HashMap<String, Object> reqMap) throws IOException {
+    public ResultDto pushMsgSearch(Map<String, Object> reqMap) throws IOException {
 
         MultiSearchRequest request = new MultiSearchRequest();
 
@@ -96,7 +96,7 @@ public class SaasServiceImpl implements ISaasService {
     }
 
     @Override
-    public ResultDto carNoSearch(HashMap<String, Object> reqMap) throws IOException {
+    public ResultDto carNoSearch(Map<String, Object> reqMap) throws IOException {
 
         MultiSearchRequest request = new MultiSearchRequest();
 
@@ -125,7 +125,7 @@ public class SaasServiceImpl implements ISaasService {
 
 
     @Override
-    public ResultDto oilWearSearch(HashMap<String, Object> reqMap) throws IOException {
+    public ResultDto oilWearSearch(Map<String, Object> reqMap) throws IOException {
 
         MultiSearchRequest request = new MultiSearchRequest();
 
