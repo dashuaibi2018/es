@@ -1,9 +1,11 @@
 package com.dna.service.impl;
 
+import cn.hutool.core.convert.Convert;
 import com.dna.entity.ResultDto;
 import com.dna.service.ISaasService;
 import com.dna.utils.ESClient;
 import com.google.gson.Gson;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.elasticsearch.action.search.MultiSearchRequest;
@@ -113,7 +115,7 @@ public class SaasServiceImpl implements ISaasService {
         ).from(pageFrom).size(pageSize)
                 .fetchSource("license_plate_no,obj_id".split(","), null);
 
-        SortOrder order = ObjectUtils.toString(reqMap.get("sortOrder")) == "desc" ? SortOrder.DESC : SortOrder.ASC;
+        SortOrder order = Convert.toStr(reqMap.get("sortOrder")) == "desc" ? SortOrder.DESC : SortOrder.ASC;
         searchSourceBuilder.sort(ObjectUtils.toString(reqMap.get("sortField")), order).from(pageFrom).size(pageSize);
         searchRequest.source(searchSourceBuilder);
 
@@ -212,5 +214,22 @@ public class SaasServiceImpl implements ISaasService {
         return res;
     }
 
+    @SneakyThrows
+    public static void main(String[] args) {
+        System.out.println(Convert.toStr(129));
 
+        long[] b = {1, 2, 3, 4, 5};
+        //bStr为："[1, 2, 3, 4, 5]"
+        String bStr = Convert.toStr(b);
+        System.out.println(bStr);
+
+        String[] b1 = {"1", "2", "3", "4"};
+        //结果为Integer数组
+        Integer[] intArray = Convert.toIntArray(b1);
+
+        long[] c = {1, 2, 3, 4, 5};
+        //结果为Integer数组
+        Integer[] intArray2 = Convert.toIntArray(c);
+
+    }
 }

@@ -13,7 +13,7 @@ import java.io.IOException;
 public class ESClient {
 
     private static ESClient ESClient;
-    private static final String HOSTS = "192.168.2.202:9200";
+    private static final String HOSTS = "127.0.0.1:9200";
     private RestClientBuilder builer;
     static Sniffer sniffer;
     private static RestHighLevelClient highClient;
