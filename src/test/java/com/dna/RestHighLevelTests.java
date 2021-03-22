@@ -158,9 +158,9 @@ class RestHighLevelTests {
 
     @Test
     public void getById() throws IOException {
-        GetRequest request = new GetRequest("test_sj", "40oCJXUBvlFwiZ4Og9N8");
+        GetRequest request = new GetRequest("push_msg", "006e06f56abd42f786332558b9e15448");
 
-        String[] includes = {"name", "price"};
+        String[] includes = {"app_name", "msg"};
         String[] excludes = {"desc"};
         FetchSourceContext fetchSourceContext = new FetchSourceContext(true, includes, excludes);
         request.fetchSourceContext(fetchSourceContext);

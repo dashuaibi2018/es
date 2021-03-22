@@ -3,10 +3,11 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password: 123456
-    url: jdbc:mysql://192.168.2.202:3306/test?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&llowMultiQueries=true
+    url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&llowMultiQueries=true
   mybatis-plus:
     configuration:
       log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   elasticsearch:
     rest:
-      uris: http://192.168.2.202:9200
+      uris: http://127.0.0.1:9200
+#      uris: http://192.168.2.202:9200
