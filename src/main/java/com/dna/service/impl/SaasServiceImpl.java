@@ -116,7 +116,7 @@ public class SaasServiceImpl implements ISaasService {
                 .fetchSource("license_plate_no,obj_id".split(","), null);
 
         SortOrder order = Convert.toStr(reqMap.get("sortOrder")) == "desc" ? SortOrder.DESC : SortOrder.ASC;
-        searchSourceBuilder.sort(ObjectUtils.toString(reqMap.get("sortField")), order).from(pageFrom).size(pageSize);
+        searchSourceBuilder.sort(Convert.toStr(reqMap.get("sortField")), order).from(pageFrom).size(pageSize);
         searchRequest.source(searchSourceBuilder);
 
         request.add(searchRequest);
