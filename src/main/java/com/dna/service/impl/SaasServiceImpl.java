@@ -6,7 +6,6 @@ import com.dna.service.ISaasService;
 import com.dna.utils.ESClient;
 import com.google.gson.Gson;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.elasticsearch.action.search.MultiSearchRequest;
 import org.elasticsearch.action.search.MultiSearchResponse;
@@ -179,7 +178,7 @@ public class SaasServiceImpl implements ISaasService {
             Iterator<Aggregation> sumIter = dateBucket.getAggregations().iterator();
             while (sumIter.hasNext()) {
                 Sum next = (Sum) sumIter.next();
-                System.out.println("name: " + next.getName() + "  count: " + (int) next.value());//new Double(next.value()).intValue()
+                System.out.println("name: " + next.getName() + "  count: " + (int) next.value()); //new Double(next.value()).intValue()
             }
         }
 
@@ -209,7 +208,7 @@ public class SaasServiceImpl implements ISaasService {
 
 //        res.setData(response.getResponses()[0].getResponse().getHits().getHits());
         res.setRecordList(recordList);
-        res.setTotal(ObjectUtils.toString(hits.getTotalHits().value));
+        res.setTotal(Convert.toStr(hits.getTotalHits().value));
         res.setCostTime(response.getResponses()[0].getResponse().getTook().toString());
         return res;
     }
