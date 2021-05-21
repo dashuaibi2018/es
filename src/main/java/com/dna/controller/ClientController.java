@@ -3,24 +3,32 @@ package com.dna.controller;
 
 import com.dna.entity.ResultDto;
 import com.dna.utils.ESClient;
+import lombok.SneakyThrows;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.*;
 import org.elasticsearch.action.update.UpdateRequest;
+import org.elasticsearch.client.Request;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.script.ScriptType;
+import org.elasticsearch.script.mustache.SearchTemplateRequest;
+import org.elasticsearch.script.mustache.SearchTemplateResponse;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/city")
@@ -106,9 +114,60 @@ public class ClientController {
     }
 
 
+
+    //region Search template
+    @RequestMapping("/templateSearch")
+    @SneakyThrows
+    public ResultDto templateSearch() {
+
+        //region 创建模板并缓存 作用域为整个集群
+        Request scriptRequest = new Request("POST", "_scripts/test_template_search");
+        scriptRequest.setJsonEntity(
+                "{" +
+                        "  \"script\": {" +
+                        "    \"lang\": \"mustache\"," +
+                        "    \"source\": {" +
+                        "      \"query\": { \"match\" : { \"{{field}}\" : \"{{value}}\" } }," +
+                        "      \"size\" : \"{{size}}\"" +
+                        "    }" +
+                        "  }" +
+                        "}");
+        Response scriptResponse = client.getLowLevelClient().performRequest(scriptRequest);
+        //endregion
+        //***********************************     华丽的分割线     *******************************************************
+        SearchTemplateRequest request = new SearchTemplateRequest();
+        request.setRequest(new SearchRequest("msb_auto"));
+        request.setScriptType(ScriptType.STORED);
+        request.setScript("test_template_search");
+        //region 本地模板
+        //        request.setScriptType(ScriptType.INLINE);
+//        request.setScript(
+//                        "{\n" +
+//                        "  \"from\": {{from}},\n" +
+//                        "  \"size\": {{size}},\n" +
+//                        "  \"query\": {\n" +
+//                        "    \"match\": {\n" +
+//                        "      \"master_brand_name\": \"{{master_brand_name}}\"\n" +
+//                        "    }\n" +
+//                        "  }\n" +
+//                        "}");
+        //endregion
+        Map<String, Object> scriptParams = new HashMap<>();
+        scriptParams.put("field", "master_brand_name");
+        scriptParams.put("value", "一汽");
+        scriptParams.put("size", 5);
+        request.setScriptParams(scriptParams);
+        SearchTemplateResponse response = client.searchTemplate(request, RequestOptions.DEFAULT);
+        return null;
+    }
+    //endregion
+
+
+
+
     /**
      * @param name
-     * @description: 模糊查询  众泰汽车--> 众泰骑车
+     * @description: 纠错模糊查询  众泰汽车--> 众泰骑车
      * @return: com.dna.utils.ResultDto
      * @author: SUJUN
      * @time: 2020/10/19 18:24
@@ -195,7 +254,7 @@ public class ClientController {
 
     /**
      * @param
-     * @description: multiSearch  一个请求同时多个查询
+     * @description: multiSearch  一个请求同时多个查询  鸡肋  类似bool查询
      * @return: com.dna.utils.ResultDto
      * @author: SUJUN
      * @time: 2020/10/19 19:07
@@ -213,7 +272,7 @@ public class ClientController {
 
         SearchRequest secondSearchRequest = new SearchRequest("service_objs_join_vehicle");
         searchSourceBuilder = new SearchSourceBuilder();
-        searchSourceBuilder.query(QueryBuilders.matchQuery("product_name", "宝马"));
+        searchSourceBuilder.query(QueryBuilders.matchQuery("product_name", "宝马"));  //matchPhraseQuery
         secondSearchRequest.source(searchSourceBuilder);
         request.add(secondSearchRequest);
 
@@ -239,7 +298,7 @@ public class ClientController {
         SearchRequest searchRequest = new SearchRequest("service_objs_join_vehicle");
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.query(QueryBuilders.boolQuery()
-//                        .must(QueryBuilders.matchQuery("product_name", "宝马").analyzer("ik_smart"))  //注意分词影响
+//                        .must(QueryBuilders.matchQuery("product_name", "2019款").analyzer("ik_smart"))  //注意分词影响
                         .must(QueryBuilders.matchPhraseQuery("product_name", "宝马"))
                         .filter(QueryBuilders.termQuery("shake_threshold", "3000"))
                         .mustNot(QueryBuilders.termQuery("brand_name.keyword", "宝马"))
